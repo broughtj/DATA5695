@@ -4,7 +4,7 @@ subtitle: |
   | McDonald Chapter 11
   | DATA 5695/6695 
 author: Tyler J. Brough
-date: 2025-02-04
+date: 2025-02-18
 title-slide-attributes:
   data-background-color: "#486790"
 format: 
@@ -17,8 +17,10 @@ execute:
   echo: true
 ---
 
+# McDonald Chapter 11 Binomial Option Pricing: Selected Topics 
 
-# McDonald Chapter 11 Binomial Option Pricing: :Selected Topics 
+
+# Understanding Early Exercise 
 
 ## Understanding Early Exercise
 
@@ -65,11 +67,14 @@ $$
 ![](../../images/mcdonald/Chp11/Figure11-2.png){width=950px height=450px}
 :::
 
+
+# Understanding Risk-Neutral Pricing
+
 ## Understanding Risk-Neutral Pricing
 
 <br>
 
-- A risk-neutral investor is indifferent between a sure thing and a risky bet with an expected payoff equal to the value of the sure thing
+- A **risk-neutral** investor is indifferent between a sure thing and a risky bet with an expected payoff equal to the value of the sure thing
 
 - $p^{\ast}$ is the risk-neutral probability that the stock price will go up 
 
@@ -78,7 +83,7 @@ $$
 
 <br>
 
-- The option pricing formula can be said to price options as if investors are risk-neutral
+- The option pricing formula can be said to price options ***as if*** investors are risk-neutral
 
 - Note that we are not assuming that investors are actually risk-neutral, and that risky assets are actually expected to earn the risk-free rate of return
 
@@ -95,3 +100,433 @@ $$
 - Yes! However, discounted cash flow is not used in practice to price options
 
 - This is because it is necessary to compute the option price in order to compute the correct discount rate
+
+
+## Pricing an Option Using Real Probabilities (cont'd)
+
+<br>
+
+- Suppose that the continuously compounded expected return on the stock is $\alpha$ and that the stock does not pay dividends
+
+- If $p$ is the true probability of the stock going up, $p$ must be consistent with $u, d$, and $\alpha$
+
+$$
+puS + (1-p)dS = e^{\alpha h} S
+$$
+
+- Solving for $p$ gives us
+
+$$
+p = \frac{e^{\alpha h} - d}{u - d}
+$$
+
+
+## Pricing an Option Using Real Probabilities (cont'd)
+
+<br>
+
+- Using $p$, the actual expected payoff to the option one period hence is
+
+$$
+pC_{u} + (1-p)C_{d} = \frac{e^{\alpha h} - d}{u - d}C_{u} + \frac{u - e^{\alpha h}}{u - d}C_{d}
+$$
+
+- At what rate do we discount this expected payoff?
+  - It is not correct to discount the option at the expected return on the stock, $\alpha$, because the option is equivalent to a leveraged investment in the stock and hence is riskier than the stock
+
+
+## Pricing an Option Using Real Probabilities (cont'd)
+
+<br>
+
+- Denote the appropriate per-period discount rate for the option as $\gamma$
+
+- Since an option is equivalent to holding a portfolio consisting of $\Delta$ shares of stock and $B$ bonds, the expected return on this portfolio is
+
+$$
+e^{\gamma h} = \frac{S \Delta}{S \Delta + B} e^{\alpha h} + \frac{B}{S \Delta + B} e^{r h}
+$$
+
+<br>
+
+* **NB:** this is like a WACC for the option contract. 
+  
+
+## Pricing an Option Using Real Probabilities (cont'd)
+
+<br>
+
+- We can now compute the option price as the expected option payoff, equation(11.5), discounted at the appropriate discount rate, given by equation (11.6). This gives
+
+$$
+C = e^{-\gamma h} \left[\frac{e^{\alpha h} - d}{u - d} C_{u} + \frac{u - e^{\alpha h}}{u - d} C_{d} \right]
+$$
+
+
+## Pricing an Option Using Real Probabilities (cont'd)
+
+<br>
+
+- It turns out that this gives us the same option price as performing the risk-neutral calculation
+
+  - Note that it does not matter whether we have the "correct" value of $\alpha$ to start with
+
+  - Any consistent pair of $\alpha$ and $\gamma$ will give the same option price
+
+  - Risk-neutral pricing is valuable because setting $\alpha = r$ results in the simplest pricing procedure.
+
+
+# One-Period Numerical Example
+
+
+## One-Period Numerical Example (Figure 11.3, p. 328)
+
+<br>
+
+- Let $\alpha = 15\%$ per annum (just pulled out of your finger!)
+
+- Let $S = \$41.0$, $K = \$40.0$, $r = 8\%$ per annum, $\sigma = 30\%$ per annum, $\delta = 0$, and $T = 1$ year
+
+
+## One-Period Example (Cont'd)
+
+<br>
+
+```{python}
+#| echo: true
+#| eval: true
+
+import numpy as np
+S, K, r, v, q, T, n = 41.0, 40.0, 0.08, 0.30, 0.0, 1.0, 1.0
+h = T / n
+
+u = np.exp((r - q)*h + v*np.sqrt(h))
+d = np.exp((r - q)*h - v*np.sqrt(h))
+u, d
+```
+
+
+## One-Period Example (Cont'd) 
+
+<br>
+
+The "true" or "physical" probability is then:
+
+```{python}
+#| echo: true
+#| eval: true
+
+a = 0.15
+p = (np.exp(a*h) - d)/ (u - d)
+p
+```
+
+<br>
+
+The option payoffs at expiry are:
+
+```{python}
+#| echo: true
+#| eval: true
+
+Cu = np.maximum(u*S - K, 0.0)
+Cd = np.maximum(d*S - K, 0.0)
+Cu, Cd
+```
+
+
+## One-Period Example (Cont'd) 
+
+<br>
+
+The expected option payoff at expiry under the physical density is:
+
+```{python}
+#| echo: true
+#| eval: true
+
+CT_hat = p*Cu + (1.0 - p)*Cd
+CT_hat
+```
+
+<br>
+
+**Q:** But how to get its present value? We cannot use $r$!
+
+
+## One-Period Example (Cont'd) 
+
+<br>
+
+The option weighted-average cost of capital (or risky discount rate):
+
+- $\Delta$ and $B$ do not depend upon $\alpha$ or $p$:
+  
+```{python}
+#| echo: true
+#| eval: true
+
+D = np.exp(-q * h) * ((Cu - Cd) / (u*S - d*S))
+B = np.exp(-r * h) * ((u*Cd - d*Cu) / (u - d))
+D, B
+```
+
+<br>
+
+So now we can compute the portfolio weights:
+
+```{python}
+#| echo: true
+#| eval: true
+
+w1 = (D*S) / (D*S + B)
+w2 = B / (D*S + B) 
+
+wacc = w1*np.exp(a*h) + w2*np.exp(r*h)
+wacc
+
+gamma = np.log(wacc)
+gamma
+```
+
+
+
+## One-Period Example (Cont'd) 
+
+<br>
+
+So with $\gamma$ in hand, we can now take the present value:
+
+```{python}
+#| echo: true
+#| eval: true
+
+C0 = np.exp(-gamma*h) * CT_hat
+C0
+```
+
+<br>
+
+**NB:** This is the same answer we got with both the no-arbitrage and risk-neutral forms of the model
+
+
+# The Binomial Tree and Lognormality
+
+## The Binomial Tree and Lognormality
+
+<br>
+
+- The usefulness of the binomial pricing model hinges on the binomial tree providing a reasonable representation of the stock price distribution
+
+- The binomial tree approximates a lognormal distribution
+
+
+## The Random Walk Model
+
+<br>
+
+- It is sometimes said that stock prices follow a random walk
+
+- Imagine that we flip a coin repeatedly
+
+  - Let the random variable $Y$ denote the outcome of the flip
+
+  - If the coin lands displaying a head, $Y = 1$; otherwise, $Y = -1$
+
+  - If the probability of a head is $50\%$, we say the coin is fair
+
+  - After $n$ flips, with the $i^{\text{th}}$ flip denoted $Y_{i}$, the cumulative total, $Z_{n}$, is
+
+$$
+Z_{n} = \sum_{i=1}^{n} Y_{i}
+$$
+
+- It turns out that the more times we flip, on average the farther we will move from where we start
+
+
+## The Random Walk Model (cont'd)
+
+<br>
+
+- We can represent the process followed by $Z_{n}$ in term of the change in $Z_{n}$
+
+$$
+Z_{n} - Z_{n-1} = Y_{n} \\
+$$
+
+<br>
+
+$$
+\begin{align}
+\text{Heads:} \quad & Z_{n} - Z_{n-1} = +1 \\
+\text{Tails:} \quad & Z_{n} - Z_{n-1} = -1
+\end{align}
+$$
+
+
+## The Random Walk Model (cont'd)
+
+- A random walk, where with heads, the change in $Z$ is 1, and with tails, the change in $Z$ is $-1$
+
+:::{.center}
+![](../../images/mcdonald/Chp11/Figure11-5.png){width=850px height=525px}
+:::
+
+
+## Simulating a Binomial Random Walk Process
+
+```{python}
+#| echo: true
+#| eval: true
+import numpy as np
+import matplotlib.pyplot as plt 
+
+# Simulate the coin flips
+X = 2 * np.random.binomial(n=1, p=0.5, size=100_000) - 1
+Z = np.cumsum(X)
+```
+
+```{python}
+#| echo: false
+#| eval: true
+# Figure for Random Walk
+plt.figure(figsize=(8, 4))
+plt.plot(Z, lw=1)
+plt.title("Cumulative Z (Random Walk)")
+plt.xlabel("Number of coin flips")
+plt.ylabel("Z")
+plt.grid(True)  # turn on both horizontal and vertical grid lines
+plt.tight_layout()
+plt.show()
+```
+
+## Simulating Binomial Prices
+
+```{python}
+#| echo: true
+#| eval: true
+S, r, v, T, N, h = 100.0, 0.06, 0.30, 1.0, 10_000, 0.0001
+u = np.exp(r*h + v*np.sqrt(h))
+d = np.exp(r*h - v*np.sqrt(h))
+p_star = (np.exp(r*h) - d) / (u - d)
+y, y[0] = np.random.choice([u, d], p=[p_star, 1.0 - p_star], size=N+1), S
+spot = np.cumprod(y) 
+```
+
+```{python}
+#| echo: false
+#| eval: true
+# Figure for Random Walk
+plt.figure(figsize=(8, 4))
+plt.plot(spot, lw=1)
+plt.title("Stock Price")
+plt.xlabel("Time (years)")
+plt.ylabel("Dollars ($)")
+plt.grid(True)  # turn on both horizontal and vertical grid lines
+plt.tight_layout()
+plt.show()
+```
+
+
+## The Random Walk Model (cont'd)
+
+<br>
+
+- The idea that asset prices should follow a random walk was articulated in Samuelson (1965)
+  - [Proof That Properly Anticipated Prices Fluctuate Randomly](https://www.worldscientific.com/doi/abs/10.1142/9789814566926_0002)
+
+- In efficient markets, an asset price should reflect all available information. In response to new information the price is equally likely to move up or down, as with the coin flip
+
+- The price after a period of time is the initial price plus the cumulative up and down movements due to informational surprises
+
+
+## Modeling Stock Prices As a Random Walk
+
+<br>
+
+- The above description of a random walk is not a satisfactory description of stock price movements. There are at least three problems with this model
+
+  - If by chance we get enough cumulative down movements, the stock price will become negative
+
+  - The magnitude of the move (\$1) should depend upon how quickly the coin flips occur and the level of the stock price
+
+  - The stock, on average, should have a positive return. The random walk model taken literally does not permit this
+
+- The binomial model is a variant of the random walk model that solves all of these problems at once
+
+
+## The Binomial Model
+
+$$
+S_{t+h} = S_{t} e^{(r - \delta)h \pm \sigma\sqrt{h}}
+$$
+
+- Taking logs, we obtain
+
+$$
+\ln\left(S_{t+h} / S_{t}\right) = (r - \delta)h \pm \sigma\sqrt{h} \quad\quad \text{(11.11)}
+$$
+
+  - Since $\ln\left(S_{t+k} / S_{t}\right)$ is the continuously compounded return from $t$ to $t+h$, the binomial model is simply a particular way to model the continuously compounded return
+
+  - That return has two parts:
+    - The drift: $(r - \delta) h$ generates the upward trend (all else equal)
+    - The diffusion: $\sigma\sqrt{h}$) which is uncertain and generates the up and down moves
+
+
+## The Binomial Model (cont'd)
+
+<br>
+
+- Equation (11.11) solves the three problems in the random walk
+
+  - The stock price cannot become negative
+
+  - As $h$ gets smaller, up and down moves get smaller
+
+  - There is a $(r-\delta) h$ term, and we can choose the probability of an up move, so we can guarantee that the expected change in the stock price is positive
+
+
+## Lognormality and the Binomial Model
+
+<br>
+
+- The binomial tree approximates a lognormal distribution, which is commonly used to model stock prices
+
+- The lognormal distribution is the probability distribution that arises from the assumption that continuously compounded returns on the stock are normally distributed
+
+- With the lognormal distribution, the stock price is positive, and the distribution is skewed to the right, that is, there is a chance that extremely high stock prices will occur
+
+
+## Lognormality and the Binomial Model (cont'd)
+
+- The binomial model implicitly assigns probabilities to the various nodes.
+
+<br>
+
+:::{.center}
+![](../../images/mcdonald/Chp11/Figure11-6.png){width=950px height=450px}
+:::
+
+
+## Lognormality and the Binomial Model (cont'd)
+
+- The following graph compares the probability distribution for a 25-period binomial tree with the corresponding lognormal distribution
+
+<br>
+
+:::{.center}
+![](../../images/mcdonald/Chp11/Figure11-8.png){width=950px height=450px}
+:::
+
+
+## Is the Binomial Model Realistic?
+
+<br>
+
+- The binomial model is a form of the random walk model, adapted to modeling stock prices. The lognormal random walk model in this section assumes among other things, that
+  - Volatility is constant
+  - "Large" stock price movements do not occur
+  - Returns are independent over time
+
+- All of these assumptions appear to be violated in the data
