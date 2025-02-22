@@ -1,0 +1,333 @@
+# Assignment 2: Joe Davis
+
+First, I need to get the binomial.py
+```{python}
+import sys 
+sys.path.append('../../code/') #Locating code folder
+from binomial import * #Importing all the packages
+```
+
+## 10.1 
+### a)
+```{python}
+S, K, r, T, d, u, d, n = 100, 105, .08, .5, 0, 1.3, 0.8, 1
+h=T/n
+
+# Instantiate CallPayoff with strike price K
+call_payoff = CallPayoff(strike=K)
+
+# Calculate the spot prices for up and down states
+uS = S * u  
+dS = S * d   
+
+# Get the payoff for both states
+Pu = call_payoff(uS) 
+Pd = call_payoff(dS)
+
+#Getting the share of stock and borrowing amount
+D = (Pu-Pd)/(uS-dS)
+B= np.exp(-r*h) * ((u*Pd-d*Pu)/(u-d))
+
+#Option premium
+p=D*S+B 
+
+print(f"The premium is {round(p,2)}, the delta is {D}, and B is {round(B,2)}")
+```
+
+### b)
+```{python}
+# Instantiate PutPayoff
+put_payoff = PutPayoff(strike=K)
+
+# Calculate the spot prices for up and down states
+uS = S * u  
+dS = S * d   
+
+# Get the payoff for both states
+Pu = put_payoff(uS) 
+Pd = put_payoff(dS)
+
+#Getting the share of stock and borrowing amount
+D = (Pu-Pd)/(uS-dS)
+B= np.exp(-r*h) * ((u*Pd-d*Pu)/(u-d))
+
+#Option premium
+p=D*S+B 
+
+print(f"The premium is {round(p,2)}, the delta is {D}, and B is {round(B,2)}")
+```
+
+## 10.2
+### a)
+```{python}
+K=95
+
+# Instantiate CallPayoff with strike price K
+call_payoff = CallPayoff(strike=K)
+
+# Calculate the spot prices for up and down states
+uS = S * u  
+dS = S * d   
+
+# Get the payoff for both states
+Pu = call_payoff(uS) 
+Pd = call_payoff(dS)
+
+#Getting the share of stock and borrowing amount
+D = (Pu-Pd)/(uS-dS)
+B= np.exp(-r*h) * ((u*Pd-d*Pu)/(u-d))
+
+#Option premium
+p=D*S+B 
+
+print(f"The premium is {round(p,3)}")
+
+```
+
+### b)
+The arbitrage is that the option premium is higher than the synthetic option. So, one could buy low by buying the synthetic option and then selling the actual option. 
+
+### c)
+In this case you'd do the opposite. You'd buy the option premium and sell the synthetic option.
+
+## 10.3
+### a)
+```{python}
+put_payoff = PutPayoff(strike=K)
+
+# Calculate the spot prices for up and down states
+uS = S * u  
+dS = S * d   
+
+# Get the payoff for both states
+Pu = put_payoff(uS) 
+Pd = put_payoff(dS)
+
+#Getting the share of stock and borrowing amount
+D = (Pu-Pd)/(uS-dS)
+B= np.exp(-r*h) * ((u*Pd-d*Pu)/(u-d))
+
+#Option premium
+p=D*S+B 
+
+print(f"The premium is {round(p,3)}")
+
+```
+### b)
+Since the option premium is higher, one could sell the option and then buy the synthetic option.
+
+### c)
+In this case, it'd be the opposite. Buy the option, and sell the synthetic option.
+
+
+## 10.4
+### a)
+```{python}
+import yfinance as yf
+import pandas as pd
+
+ticker_symbol = 'MCD'
+
+# Download the last 5 years of daily stock data
+mcd_data = yf.download(ticker_symbol, period='5y', interval='1d')
+
+mcd_close = mcd_data['Close']
+
+mcd_close['Previous Day'] = mcd_close.shift(1)
+
+mcd_close['Daily Return'] = (mcd_close['MCD']-mcd_close['Previous Day'])/mcd_close['Previous Day']
+
+#Finally, the volatility of the daily returns
+mcd_vol = mcd_close['Daily Return'].std()
+
+print(f"The overall votility for McDonalds was {round(mcd_vol,4)}.")
+
+```
+
+### b)
+It can vary wildly from year to year. 2020 had the highest volatilty with 0.026, while 2023 had the lowest volatility at 0.009.
+```{python}
+vol_results={}
+for year in range(2020,2026,1):
+    year_start = str(year)+"-01-01"
+    year_end = str(year)+'-12-31'
+    mcd_year = mcd_close[(mcd_close.index>=year_start) & (mcd_close.index<=year_end)]
+    year_vol = mcd_year['Daily Return'].std()
+    vol_results[year]=year_vol
+
+vol_results
+```
+
+### c)
+Quite a lot. The first half of 2020 was 0.039, while the last half of 2023 was 0.0087
+```{python}
+vol_results_2={}
+for year in range(2020,2026,1):
+    year_start = str(year)+"-01-01"
+    mid_year = str(year)+"-07-01"
+    year_end = str(year)+'-12-31'
+    mcd_beg = mcd_close[(mcd_close.index>=year_start) & (mcd_close.index<=mid_year)]
+    mcd_end = mcd_close[(mcd_close.index>=mid_year) & (mcd_close.index<=year_end)]
+    year_beg_vol = mcd_beg['Daily Return'].std()
+    year_end_vol = mcd_end['Daily Return'].std()
+    vol_results_2[str(year)+": First Half"]=year_beg_vol
+    vol_results_2[str(year)+": Last Half"]=year_end_vol
+
+vol_results_2
+```
+
+## 10.5
+They are similar in that their most volatile year was 2020. Besides that there seems to be a general correlation but even then it isn't super strong.
+```{python}
+ticker_data = {}
+
+ticker_symbols = ['MCD','GM','RS']
+
+for ticker in ticker_symbols:
+    data = yf.download(ticker, period='5y', interval='1d')
+    close_data = data['Close']
+    close_data['Previous Day'] = close_data.shift(1)
+
+    close_data['Daily Return'] = (close_data[ticker]-close_data['Previous Day'])/close_data['Previous Day']
+
+    ticker_data[ticker] = {}
+    for year in range(2020,2026,1):
+        year_start = str(year)+"-01-01"
+        year_end = str(year)+'-12-31'
+        year_data = close_data[(close_data.index>=year_start) & (close_data.index<=year_end)]
+        year_vol = year_data['Daily Return'].std()
+        ticker_data[ticker][year]=year_vol
+
+ticker_data
+
+```
+
+## 10.12
+### a)
+```{python}
+#American call
+data = {
+    'ex_style': ExerciseStyle.American,
+    'ex_type': ExerciseType.Call,
+    'spot': 100.0,
+    'strike': 95.0,
+    'rate': 0.08,
+    'volatility': 0.30,
+    'dividend': 0.0,
+    'expiry': 1
+}
+
+## Create the call option object
+a_call = FinancialOption(**data)
+
+## Price the option
+result_a = lattice(a_call, 3)
+print(f"The American call price is: {result_a.price}")
+
+#Doing the same with the European
+data['ex_style']=ExerciseStyle.European
+
+## Create the call option object
+e_call = FinancialOption(**data)
+
+## Price the option
+result_e = lattice(e_call, 3)
+print(f"The European call price is: {result_e.price}")
+```
+
+### b)
+
+```{python}
+data['ex_type'] = ExerciseType.Put
+e_put = FinancialOption(**data)
+
+result_ep = lattice(e_put, 3)
+print(f"The European put is: {result_ep.price}")
+
+# Verifying the call-put parity
+# C + PV(K) = P + S
+left = result_e.price + (data['strike']*np.exp(-data['rate']*data['expiry']))
+right = result_ep.price + data['spot']
+difference = left-right
+#The difference should be close to zero
+print(f"The difference between C+PV(K) and P+S is: {difference}")
+
+```
+
+### c)
+```{python}
+## Create the put option object
+data['ex_style'] = ExerciseStyle.American
+a_put = FinancialOption(**data)
+
+## Price the option
+result_ap = lattice(a_put, 3)
+print(f"The American put price is: {result_ap.price}")
+```
+
+## 10.13
+```{python}
+data['ex_type']=ExerciseType.Call
+data['dividend'] = 0.08
+
+## Create the call option object
+a_call = FinancialOption(**data)
+
+## Price the option
+result_a = lattice(a_call, 3)
+print(f"The American call price is: {result_a.price}")
+
+#Doing the same with the European
+data['ex_style']=ExerciseStyle.European
+
+## Create the call option object
+e_call = FinancialOption(**data)
+
+## Price the option
+result_e = lattice(e_call, 3)
+print(f"The European call price is: {result_e.price}")
+
+data['ex_type'] = ExerciseType.Put
+e_put = FinancialOption(**data)
+
+result_ep = lattice(e_put, 3)
+print(f"The European put is: {result_ep.price}")
+
+data['ex_style'] = ExerciseStyle.American
+a_put = FinancialOption(**data)
+
+## Price the option
+result_ap = lattice(a_put, 3)
+print(f"The American put price is: {result_ap.price}")
+```
+
+Since the American call and put prices are both greater than their respective European calls and puts, then both the American call and put options will be exercised early. 
+
+## Extra Problem
+```{python}
+data = {
+    'ex_style': ExerciseStyle.European,
+    'ex_type': ExerciseType.Call,
+    'spot': 41.0,
+    'strike': 40.0,
+    'rate': 0.08,
+    'volatility': 0.30,
+    'dividend': 0.0,
+    'expiry': 1
+}
+
+for n in range(1,220,20):
+    # Turning option to call
+    data['ex_type']=ExerciseType.Call
+    c_opcion = FinancialOption(**data)
+    c_result = lattice(c_opcion, n)
+    print(f"European Call, Steps={n}, Price = ${round(c_result.price,2)}")
+    #Now doing the puts
+    data['ex_type']=ExerciseType.Put
+    p_opcion = FinancialOption(**data)
+    p_result = lattice(p_opcion, n)
+    print(f"European Put, Steps={n}, Price=${round(p_result.price,2)}")
+
+    
+
+```

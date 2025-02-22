@@ -1,0 +1,619 @@
+# Chapter 2
+
+## 2.1
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+p = 50 #price of $50
+r=.1 #10% annual interest
+
+fv = p*(1+r) #Just one year
+payoff = fv - p
+spot_prices = np.arange(40,75,5)
+payoffs = spot_prices - fv
+
+
+
+# Plotting the payoffs
+plt.figure(figsize=(10, 6))
+plt.plot(spot_prices, payoffs, label='Long Forward Payoff', linestyle='--', linewidth=2)
+# Add horizontal line at payoff = 0
+plt.axhline(0, color='black', linewidth=1, linestyle='--') 
+# Add verticle line at year 1
+plt.axvline(55, color='black', linewidth=1, linestyle='--', label="Profit at Year 1 for $55")
+plt.xlabel('Price of Stock', fontsize=12)
+plt.ylabel('Payoff', fontsize=12)
+plt.title('Payoff of Long Forward Stock', fontsize=14)
+plt.legend(fontsize=10)
+plt.grid(alpha=0.5)
+
+# Show the plot
+plt.show()
+
+```
+
+As you can see in the graph, the profit for $55 stock in year 1 is 0.
+
+## 2.2
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+p = 50 #price of $50
+r=.1 #10% annual interest
+
+fv = p*(1+r) #Just one year
+payoff = fv - p
+spot_prices = np.arange(40,75,5)
+payoffs = fv - spot_prices
+
+
+
+# Plotting the payoffs
+plt.figure(figsize=(10, 6))
+plt.plot(spot_prices, payoffs, label='Short Payoff', linestyle='--', linewidth=2)
+# Add horizontal line at payoff = 0
+plt.axhline(0, color='black', linewidth=1, linestyle='--') 
+# Add verticle line at year 1
+plt.axvline(55, color='black', linewidth=1, linestyle='--', label="Profit at Year 1 for $55")
+plt.xlabel('Price of Stock', fontsize=12)
+plt.ylabel('Payoff', fontsize=12)
+plt.title('Payoff of Short Stock', fontsize=14)
+plt.legend(fontsize=10)
+plt.grid(alpha=0.5)
+
+# Show the plot
+plt.show()
+```
+
+## 2.3
+* The opposite of a purchased call is a written call
+* The opposite of a purchased put is a written put
+
+## 2.4 
+* a) Long Forward Payoffs
+    * $40: -$10, $45: -$5, $50: $0, $55: +$5, $60: +$10
+* b) Call Option Payoffs
+    * $40: $0, $45: $0, $50: $0, $55: $5, $60: $10
+* c) The call option will be more expensive because the option mitigates the losses that could incur, thus the writers will require more payment up front because their profits are limited.
+
+## 2.5 
+* a) Short Forward Payoffs:
+    * $40: $10, $45: $5, $50: $0, $55: -$5, $60: -$10
+* b) Put Option Payoffs:
+    * $40: $10, $45: $5, $50: $0, $55: $0, $60: $0
+* c) The long put should be more expensive because it minimizes risk for the buyer of the option, but increases risk for the writer of the option, because they're upside is limited. So the higher price of the option compensates the writer for their increased risk. 
+
+## 2.6
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+issue_price = 91
+face_value = 100
+annual_interest_rate = (100-91)/91
+print("You're annual interest rate is:", round(annual_interest_rate*100,2),"%")
+
+
+spot_prices = np.arange(90, 110, 5)
+payoff = 100 - spot_prices*0
+profit = payoff - issue_price
+
+plt.figure(figsize=(10,6))
+plt.plot(spot_prices, payoff, label="Payoff", linestyle='--', linewidth=1)
+plt.plot(spot_prices, profit, label="Profit", linestyle=":", linewidth=1 )
+
+plt.xlabel("Spot Prices")
+plt.ylabel("Payoff and Profit")
+plt.title("Problem 2.6")
+plt.legend()
+plt.show()
+```
+
+## 2.13
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+options = ['strike_35', 'strike_40','strike_45']
+strikes = {'strike_35': 35, 'strike_40': 40, 'strike_45':45}
+premiums = {'strike_35': 9.12, 'strike_40':6.22, 'strike_45':4.08}
+spot_prices = np.arange(25,55,5)
+
+def payoff(option, spot_prices):
+    strike = strikes[option]
+    payoffs = np.maximum(0, spot_prices-strike)
+    return payoffs
+
+def profit(option, spot_prices, r):
+    strike = strikes[option]
+    premium = premiums[option]
+    fv_premium = premium * (1+r) #Only going one year into the future
+    profits = np.maximum(0, spot_prices-strike)-fv_premium
+
+    return profits
+
+plt.figure(figsize=(10,6))
+for option in options:
+    payoff_ = payoff(option, spot_prices)
+    plt.plot(spot_prices,payoff_, label=option)
+plt.xlabel("Spot Price")
+plt.ylabel("Payoff")
+plt.title("Call Payoffs for various strike prices after 1 Year")
+plt.legend()
+plt.show()
+
+plt.figure(figsize=(10,6))
+for option in options:
+    profit_ = profit(option, spot_prices, .08)
+    plt.plot(spot_prices,profit_, label=option)
+# Add horizontal line at profit = 0
+plt.axhline(0, color='black', linewidth=1, linestyle='--') 
+plt.xlabel("Spot Price")
+plt.ylabel("Profit")
+plt.title("Call Profits for various strike prices after 1 Year")
+plt.legend()
+plt.show()
+```
+
+Premiums tend to decrease as the strike price increases because there is less risk for the writer of the options. As the strike price increases, the chance of the option being exercised decreases, which also means a smaller payoff and less profit for the buyer of the option.
+
+## 2.14
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+import numpy as np
+import matplotlib.pyplot as plt
+options = ['strike_35', 'strike_40','strike_45']
+strikes = {'strike_35': 35, 'strike_40': 40, 'strike_45':45}
+premiums = {'strike_35': 1.53, 'strike_40':3.26, 'strike_45':5.75}
+spot_prices = np.arange(25,55,5)
+
+def payoff(option, spot_prices):
+    strike = strikes[option]
+    payoffs = np.maximum(0, strike-spot_prices)
+    return payoffs
+
+def profit(option, spot_prices, r):
+    strike = strikes[option]
+    premium = premiums[option]
+    fv_premium = premium * (1+r) #Only going one year into the future
+    profits = np.maximum(0, strike-spot_prices)-fv_premium
+
+    return profits
+
+plt.figure(figsize=(10,6))
+for option in options:
+    payoff_ = payoff(option, spot_prices)
+    plt.plot(spot_prices,payoff_, label=option)
+plt.xlabel("Spot Price")
+plt.ylabel("Payoff")
+plt.title("Put Payoffs for various strike prices after 1 Year")
+plt.legend()
+plt.show()
+
+plt.figure(figsize=(10,6))
+for option in options:
+    profit_ = profit(option, spot_prices, .08)
+    plt.plot(spot_prices,profit_, label=option)
+# Add horizontal line at profit = 0
+plt.axhline(0, color='black', linewidth=1, linestyle='--') 
+plt.xlabel("Spot Price")
+plt.ylabel("Profit")
+plt.title("Put Profits for various strike prices after 1 Year")
+plt.legend()
+plt.show()
+```
+
+The premium increases as the strike price increases, because as the strike price increases, there is a larger payoff for the buyer of the option. With that increased payoff comes a higher premium, because the writer of the option increases their risk of the option being exercised.
+
+## 2.16
+2.16 Construct a spreadsheet that permits you to compute payoff and profit for a short and long stock, a short and long forward, and purchased and written puts and calls. The spreadsheet should let you specify the stock price, forward price, interest rate, option strikes, and option premiums. Use the spreadsheet’s max function to compute option payoffs.
+* Short and long stock
+* Short and long forward
+* Purchased and written puts
+* Purchased and written calls
+
+```{python}
+import numpy as np
+
+# Define the given variables
+stock_price = 32    # Current stock price
+spot_price = 35     # Spot price
+forward_price = 34  # Forward price 
+strike_price = 35   # Strike
+premium = 3         # premium
+r = 0.04            # r
+T = 0.5             # time
+
+fv_price = stock_price * (1 + r)
+fv_forward = forward_price * (1 + r)
+fv_strike = strike_price * (1 + r)
+fv_premium = premium * (1 + r)
+
+#  Calculating payoffs and profits
+def calculate_payoff_profit(option_type, distance):
+    payoff=0
+    profit=0
+    if option_type == "Stock":
+        if distancia == "Long":
+            payoff = spot_price - fv_price
+            profit = spot_price - fv_price
+        elif distancia == "Short":
+            payoff = fv_price - spot_price
+            profit = fv_price - spot_price
+
+    elif option_type == "Forward":
+        if distancia == "Long":
+            payoff = spot_price - fv_forward
+            profit = spot_price - fv_forward
+        elif distancia == "Short":
+            payoff = fv_forward - spot_price
+            profit = fv_forward - spot_price
+
+    elif option_type == "Put":
+        if distancia == "Purchased":
+            payoff = np.maximum(0, fv_strike - spot_price)
+            profit = np.maximum(0, fv_strike - spot_price) - fv_premium
+        elif distancia == "Written":
+            payoff = np.minimum(0, -(fv_strike - spot_price))
+            profit = np.minimum(0, -(fv_strike - spot_price)) + fv_premium
+
+    elif option_type == "Call":
+        if distancia == "Purchased":
+            payoff = np.maximum(0, spot_price - fv_strike)
+            profit = np.maximum(0, spot_price - fv_strike) - fv_premium
+        elif distancia == "Written":
+            payoff = np.minimum(0, -(spot_price - fv_strike))
+            profit = np.minimum(0, -(spot_price - fv_strike)) + fv_premium
+
+    return payoff, profit
+
+
+# List of all possible options and strategies
+option_types = ["Stock", "Forward", "Put", "Call"]
+distancias = ["Long", "Short", "Purchased", "Written"]
+
+# Loop through all combinations
+for option_type in option_types:
+    for distancia in distancias:
+        payoff, profit = calculate_payoff_profit(option_type, distancia)
+        print(f"Option Type: {option_type}, Strategy: {distancia}")
+        print(f"Payoff: ${payoff}")
+        print(f"Profit: ${profit}\n")
+
+
+```
+
+# Chapter 9
+
+## 9.1
+* $C(K,T)=P(K,T)+S_{0}e^{-\delta T}-PV_{0,T}(K)$
+	* $C(K,T)=$35$
+	* $S_{0}=\$32$
+	* $T=0.5$
+	* $r=.04$
+	* $\delta=.06$
+		* Dividend yield
+	* $K=\$35$
+* $\$2.27=P(K,T)+S_{0}e^{.06*.5}-e^{-.04*.5}(35)$
+
+```{python}
+
+put_price = 2.27-(32*np.exp(-.06*.5))+np.exp(-.04*.5)*35
+print(f"The associated put price is: ${round(put_price,2)}")
+
+
+```
+
+## 9.2
+
+* $C(K,T)=P(K,T)+S_{0}e^{-\delta T}-PV_{0,T}(K)$
+	* $C(K,T)=\$4.29$
+	* $S_{0}=\$32$
+	* $T=0.5$
+	* $r=.04$
+	* $K=\$30$
+```{python}
+pv_div = 4.29-2.64+np.exp(-.04*.5)*30
+print(f"The present value of the dividends is: ${round(pv_div,2)}")
+```
+
+## 9.3
+```{python}
+def call_payoff(spot, strike, r, T):
+    payout = np.maximum(0, spot - strike)
+    pv_payout = np.exp(-r*T)*payout
+    return pv_payout
+
+def put_payoff(spot, strike, r, T):
+    payout = np.maximum(0, strike-spot)
+    pv_payout = np.exp(-r*T)*payout
+    return pv_payout
+
+#a) Buying a stock, selling a call, buying a put
+initial_net_investment = 800 - 75 + 45
+#selling the stock after 1 yr
+stock_payout = call_payoff(800,815,.05,1) 
+print('stock_payout:',stock_payout)
+#Payout from the put
+#Not including premium in the calculation since I already
+# included that in my initial_investment variables
+put_payout = put_payoff(800,815,.05,1) 
+print('put_payout:', put_payout)
+
+#Total payout
+total_payout = stock_payout+put_payout
+print('total_payout:', total_payout)
+#Rate of return (total payout/starting money (stock + call_option))
+ror = round((total_payout/initial_net_investment)*100,2)
+print('ror (%):', ror)
+```
+
+B)
+There is arbitrage as can be seen in the inequalities below
+
+```{python}
+import numpy as np
+
+call_price = 75
+put_price = 45
+stock_price = 800
+strike_price = 815
+pv_strike_price = np.exp(-.05)*strike_price
+
+#If there is no arbitrage, then call_price + pv_strike_price = put_price + stock_price
+left_side = call_price + pv_strike_price
+right_side = put_price + stock_price
+print("Call Price + PV(Strike):", left_side)
+print("Put Price + Stock Price:", right_side)
+
+```
+
+C)
+The difference is $5.25
+```{python}
+import numpy as np
+
+call_price = 75
+put_price = 45
+stock_price = 800
+strike_price = 815
+pv_strike_price = np.exp(-.05)*strike_price
+
+#If there is no arbitrage, then call_price + pv_strike_price = put_price + stock_price
+left_side = call_price + pv_strike_price
+right_side = put_price + stock_price
+difference = left_side-right_side
+print("This is the difference:", round(difference,2))
+
+```
+
+D)
+```{python}
+
+def parity_difference(call, put, spot, strike, r):
+    pv_strike =  np.exp(-r)*strike
+    left_side = call + pv_strike
+    right_side = put + spot
+    difference = left_side-right_side
+    return difference
+
+strikes = [780,800,820,840]
+for strike in strikes:
+    result = parity_difference(75, 45, 800, strike, .05)
+    print(f'For the strike price of {strike}, the difference is {round(result,2)}')
+
+```
+
+## 9.8
+
+We can spot the arbitrage by comparing the premiums of calls and puts across different strike prices. For no arbitrage to hold, these inequalities need to be true:
+1. $C(K_{1})\geq C(K_{2})$
+2. $P(K_{2})\geq P(K_{1})$
+However, these are violated:
+1. $9\geq10$ NOT TRUE
+2. $6\geq7$ NOT TRUE
+
+For arbitrage, I would:
+
+* Buy call at K=$50
+* Write call at K=$55
+* Write put at K=$50
+* Buy put at K=$55
+
+This guarantees me a profit of $7, no matter what the final spot price is. 
+Example of this in action:
+```{python}
+
+stock_prices = [40, 45, 50, 55, 60]
+for stock in stock_prices:
+    #Buy call at 50
+    c_profit = call_payoff(stock, 50, 0, 1)-9
+    #Write call at 55
+    cw_profit = -call_payoff(stock, 55,0,1)+10
+    #Write put at 50
+    pw_profit = -put_payoff(stock, 50, 0, 1)+7
+    #Buy put at 55
+    p_profit = put_payoff(stock, 55, 0, 1)-6
+
+    final_profit = c_profit + cw_profit + p_profit + pw_profit
+    print(f'For a stock at ${stock}, the profit would be {final_profit}')
+```
+
+## 9.9
+For no arbitrage to occur, these inequalities need to hold true:
+1. $C(K_{1})-C(K_{2})\leq K_{2}-K_{1}$
+2. $P(K_{2})-P(K_{1})\leq K_{2}-K_{1}$
+
+However, these are violated:
+1. $16-10\leq55-50$
+2. $14-7\leq55-50$
+
+For arbitrage, I would:
+
+* Write call at K=$50
+* Buy call at K=$55
+* Buy put at K=$50
+* Write put at K=$55
+
+With this strategy, I would be guaranteed $11, no matter what the price of the stock was
+
+```{python}
+
+stock_prices = [40, 45, 50, 55, 60, 65]
+for stock in stock_prices:
+    #Write call at 50
+    cw_profit = -call_payoff(stock, 50, 0, 1)+16
+    #Buy call at 55
+    c_profit = call_payoff(stock, 55,0,1)-7
+    #Buy put at 50
+    p_profit = put_payoff(stock, 50, 0, 1)-7
+    #Write put at 55
+    pw_profit = -put_payoff(stock, 55, 0, 1)+14
+
+    final_profit = c_profit + cw_profit + p_profit + pw_profit
+    print(f'For a stock at ${stock}, the profit would be {final_profit}')
+```
+
+## 9.10
+
+9.10
+For no arbitrage, this inequality needs to hold true: 
+$\frac{C(K_{1})-C(K_{2})}{K_{2}-K_{1}}\geq \frac{C(K_{2})-C(K_{3})}{K_{3}-K_{2}}$
+However, this is violated:
+$\frac{18-14}{55-50} \geq \frac{14-9.5}{60-55}$ is NOT TRUE 
+
+For arbitrage, I will try a asymmetric butterfly spread:
+
+* Buy 5 50-strike calls
+* Sell 10 55-strike calls
+* Buy 5 60-strike calls
+
+With this strategy I am guaranteed a profit, no matter what the future stock price is. 
+
+```{python}
+stock_prices = np.arange(40,80,5)
+for stock in stock_prices:
+    #Buy 5 50-strike calls
+    c_50 = 5*call_payoff(stock, 50, 0, 1)-(5*18)
+    #Sell 10 55-strike calls
+    cw_55 = -10*call_payoff(stock, 55, 0, 1)+(10*14)
+    #Buy 5 60-strike calls
+    c_60 = 5*call_payoff(stock, 60,0,1)-(5*9.5)
+    total = c_50+cw_55+c_60
+    print(f"For the stock price of ${stock}, the profit will be: ${total}")
+
+```
+
+## 9.11
+
+For no arbitrage, this inequality needs to hold true:
+$\frac{P(K_{2})-P(K_{1})}{{K_{2}-K_{1}}}\leq \frac{P(K_{3})-P(K_{2})}{K_{3}-K_{2}}$
+However, this is violated:
+$\frac{21-4}{100-80}\leq\frac{24.80-21}{105-100}$ IS NOT TRUE
+
+
+For arbitrage, I will try the same asymmetric butterfly spread:
+
+* Buy 5 50-strike calls
+* Sell 9 55-strike calls
+* Buy 5 60-strike calls
+
+Here, I'm also guaranteed profit through this arbitrage.
+
+```{python}
+stock_prices = np.arange(60,115,5)
+for stock in stock_prices:
+    #Buy 5 80-strike puts
+    p_80 = 5*put_payoff(stock, 80, 0, 1)-(5*4)
+    #Sell 9 100-strike puts
+    pw_100 = -9*put_payoff(stock, 100, 0, 1)+(10*21)
+    #Buy 5 105-strike calls
+    p_105 = 5*put_payoff(stock, 105,0,1)-(5*24.8)
+    total = p_80+pw_100+p_105
+    print(f"For the stock price of ${stock}, the profit will be: ${total}")
+
+```
+
+## 9.13
+a)
+This violates the rule that $C(K_{1})-C(K_{2}) \leq K_{2}-K_{1}$
+My arbitrage strategy would be:
+
+* Sell 90-strike call
+* Buy 95-strike call
+
+```{python}
+stock_prices = np.arange(80, 105, 5)
+for stock in stock_prices:
+    #Sell 90-strike call
+    cw_profit = -call_payoff(stock, 90, 0, 1)+10
+    #Buy 95-strike call
+    c_profit = call_payoff(stock, 95, 0, 1)-4
+    total = cw_profit + c_profit
+    print(f"For stock price ${stock}, the profit is ${total}")
+```
+
+b)
+This also violates the rule that $C(K_{1})-C(K_{2}) \leq K_{2}-K_{1}$
+My arbitrage strategy would still be:
+
+* Sell 90-strike call
+* Buy 95-strike call
+
+```{python}
+stock_prices = np.arange(80, 105, 5)
+for stock in stock_prices:
+    #Sell 90-strike call
+    cw_profit = -call_payoff(stock, 90, .1, 2)+10
+    #Buy 95-strike call
+    c_profit = call_payoff(stock, 95, .1, 2)-5.25
+    total = cw_profit + c_profit
+    print(f"For stock price ${stock}, the profit is ${total}")
+```
+
+c)
+
+```{python}
+stock_prices = np.arange(80,140,5)
+for stock in stock_prices:
+    #Buy 4 90-strike calls
+    c_90 = 4*call_payoff(stock, 90, 0, 1)-(4*15)
+    #Sell 10 100-strike calls
+    cw_100 = -10*call_payoff(stock, 100, 0, 1)+(10*10)
+    #Buy 6 105-strike calls 
+    c_105 = 6*call_payoff(stock, 105,0,1)-(6*6)
+    total = c_90+cw_100+c_105
+    print(f"For the stock price of ${stock}, the profit will be: ${total}")
+
+```
+
+## 9.13
+For either a call or a put in this scenario, if I calculate that I could get a higher return on another investment with the money currently in this call/put, then I'd exercise the American option early to get more return on my money.
+
+## 9.15
+
+This violates the rule that $C(K_{1})-C(K_{2}) \leq PV(K_{2})-PV(K_{1})$ because $\$11.924-\$11.50\geq 100-100=0$
+```{python}
+def call_payoff(spot, strike, r, T):
+    pv_strike = np.exp(-r*T)*strike
+    payout = np.maximum(0, spot - pv_strike)
+    return payout
+
+def put_payoff(spot, strike, r, T):
+    pv_strike = np.exp(-r*T)*strike
+    payout = np.maximum(0, pv_strike-spot)
+    return payout
+
+stock_prices = np.arange(95, 115, 5)
+for stock in stock_prices:
+    #Sell 105-strike call
+    cw_profit = -call_payoff(stock, 105.127, .05, 1)+11.924
+    #Buy 108-strike call
+    c_profit = call_payoff(stock, 107.788, .05, 1.5)-11.50
+    total = cw_profit + c_profit
+    print(f"For stock price ${stock}, the profit is ${total}")
+```
