@@ -76,7 +76,7 @@ def single_period_binomial(spot: float, strike: float, volatility: float, rate: 
     d = np.exp((rate - dividend)*expiry - volatility*np.sqrt(expiry))
     uS, dS = u*spot, d*spot
 
-    # apply the payoff function 
+    # apply the payoff function
     fu = payoff(uS)
     fd = payoff(dS) 
 
@@ -162,10 +162,17 @@ def lattice(option: FinancialOption, n_steps: int) -> Result:
             f[j] = np.maximum(f_tmp, payoff(x[j])) if ex_style == ExerciseStyle.American else f_tmp
 
     price = np.maximum(f[0], payoff(S))
+    
+    # solve for D and B
+    uS, dS = u*S, d*S
+    f_u, f_d = payoff(uS), payoff(dS)
+    
+    D = (f_u - f_d) / (uS - dS)
+    B = np.exp(-r * T) * ((u*f_d - d*f_u) / (u - d))
 
     return Result(
         option=option,
         price=price,
-        delta=0.5,
+        delta=D,
         n_steps=n_steps
     )
